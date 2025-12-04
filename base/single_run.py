@@ -62,6 +62,8 @@ def run_single_combination(args, param_dict, output_dir=None):
     searchspace = create_search_space(search_params_dict=FP, numeric_params_dict=numerical_params)
     
     feat_dim = len(searchspace.comp_rep_columns)
+    
+    rogi_score = roughness(comp_df=searchspace.discrete.comp_rep, exp_df=searchspace.discrete.exp_rep, lookup=lookup)
 
     recommender = create_recommender(kernel_prior=kernel_prior, switch_after=args.switch_after, acq_func=acq_func, searchspace=searchspace, init_method=init_method, feat_dim=feat_dim, kernel_name=kernel_name)
     
@@ -85,13 +87,13 @@ def run_single_combination(args, param_dict, output_dir=None):
 
     result.to_pickle(file_path)
     
-    SCORE_AUC = record_single_run(output_dir, param_dict, result, lookup, feat_dim)
+    SCORE_AUC = record_single_run(output_dir, param_dict, result, lookup, feat_dim, rogi_score)
     
     existing = False
     
     return file_path, SCORE_AUC, existing
 
-def record_single_run(output_dir, param_dict, df_result, lookup, feat_dim):
+def record_single_run(output_dir, param_dict, df_result, lookup, feat_dim, rogi_score=None):
     '''
     return: score_AUC
     '''
@@ -115,6 +117,8 @@ def record_single_run(output_dir, param_dict, df_result, lookup, feat_dim):
     row_dict = copy.deepcopy(param_dict)
     
     row_dict['f_dim'] = feat_dim
+    if rogi_score is not None:
+        row_dict['rogi_xd'] = round(rogi_score, 3)
     
     for i, top_perc in enumerate(top_perc_list):
         row_dict[f'top_{top_perc}_coverage'] = round(score_top_coverage_list[i], 3)
@@ -204,3 +208,31 @@ def top_coverage(lookup, results, top_perc_list=None, x:int=None):
         # coverage of top-k% findings during all MC_RUNS
         SCORE_COVERAGE.append( sumbest / len(results) )
     return SCORE_COVERAGE
+
+
+def roughness(comp_df:pd.DataFrame, exp_df:pd.DataFrame, lookup:pd.DataFrame):
+    
+    match_cols = list(exp_df.columns)
+
+    merged = exp_df.merge(
+        lookup,
+        on=match_cols,
+        how="left"
+    )
+
+    if merged["yield"].isna().any():
+        print("unmatched row:")
+        print(merged[merged["yield"].isna()].head())
+
+    X = comp_df.values
+
+    y = merged["yield"].values
+    
+    from tools.rogi import compute_distance_matrix, rogi
+    from tools.rogi_utils import IntegrationDomain
+    
+    D_x = compute_distance_matrix(X)
+    
+    rogi_score = rogi(Dx=D_x, y=y, domain=IntegrationDomain.LOG_CLUSTER_RATIO) 
+    
+    return rogi_score
