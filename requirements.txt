@@ -16,3 +16,4 @@ accelerate
 tiktoken
 sentencepiece
 scikit-optimize
+fastcluster==1.2.5

@@ -63,11 +63,14 @@ def run_single_combination(args, param_dict, output_dir=None):
     
     feat_dim = len(searchspace.comp_rep_columns)
     
-    rogi_score = roughness(comp_df=searchspace.discrete.comp_rep, exp_df=searchspace.discrete.exp_rep, lookup=lookup)
+    try:
+        rogi_score = roughness(comp_df=searchspace.discrete.comp_rep, exp_df=searchspace.discrete.exp_rep, lookup=lookup)
+    except:
+        rogi_score = None
 
     recommender = create_recommender(kernel_prior=kernel_prior, switch_after=args.switch_after, acq_func=acq_func, searchspace=searchspace, init_method=init_method, feat_dim=feat_dim, kernel_name=kernel_name)
     
-    # TODO to get model hyperparameters: surrogate_model._model.covar_module.lengthscale, see BoTorch.
+    # to get model hyperparameters: surrogate_model._model.covar_module.lengthscale, see BoTorch.
 
     campaign = create_campaign(searchspace=searchspace, objective=objective, recommender=recommender)
 
@@ -223,8 +226,12 @@ def roughness(comp_df:pd.DataFrame, exp_df:pd.DataFrame, lookup:pd.DataFrame):
     if merged["yield"].isna().any():
         print("unmatched row:")
         print(merged[merged["yield"].isna()].head())
+        
+    valid_mask = ~merged["yield"].isna()
+    
+    merged = merged[valid_mask].reset_index(drop=True)
 
-    X = comp_df.values
+    X = comp_df.values[valid_mask]
 
     y = merged["yield"].values
     

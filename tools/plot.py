@@ -213,10 +213,3 @@ def plot_kernel_prior_2d_scatter(pkl_file: str, dataset: str, metric='score_AUC'
 
 if __name__ == "__main__":
     pass
-    # plot_subplots_by_two_factors(results=pd.read_pickle('/Users/guanmingchen/Desktop/BO/BayBE-FP/output/shields_switch5_mc2_niter30_batch1_seed1337/all_results.pkl'), dataset='shields')
-    
-    # plot_param_heatmap(df=pd.read_pickle('/Users/guanmingchen/Desktop/BO/BayBE-FP/output/shields_switch5_mc2_niter30_batch1_seed1337/all_records.pkl'), col_x='FP_TYPES', col_y='KERNEL_PRIOR', metric='score_AUC', dataset='shields')
-
-    for dataset in ['shields', 'ni_catalyzed_2']:
-        for metric in ['score_AUC', 'top_0.05_coverage']:
-            plot_kernel_prior_2d_scatter(pkl_file=f'/Users/guanmingchen/Desktop/BO/BayBE-FP/output/{dataset}_switch5_mc2_niter30_batch1_seed1337/all_records.pkl', dataset=dataset, metric=metric, a=0.4, b=4.0,  d_scale='sqrt')

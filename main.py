@@ -87,23 +87,14 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    # 214 combos
-    PARAM_GRID_FULL = {
-        "FP_TYPES": ['one_hot', 'mordred', 'chemeleon', 'chemberta_small', 'chemberta_large', 't5-base-chem'],
-        "KERNEL_PRIOR": ['BayBE8D', 'BayBE75D', 'EDBO+', 'EDBO_MORDRED', 'EDBO_OHE', 'max_custom_0', 'BayBE_adaptive', 'LogNormal_DSP', 'SBO', 'adaptive_emilien'],
-        "THRESHOLD": ['PCA', 0.7, 0.9],
-        "ACQ_FUNC": ['qLogEI'],
-        "INIT_METHOD": ['random'],
-        "KERNEL_NAME": ['Matern', 'RBF'],
-    }
-    
+    # 338 combos
     param_grid = {
         "FP_TYPES": ['one_hot', 'mordred', 'chemeleon', 'chemberta_large', 't5-base-chem'],
-        "KERNEL_PRIOR": ['adaptive_emilien'],
+        "KERNEL_PRIOR": ['BayBE8D', 'BayBE75D', 'EDBO+', 'EDBO_MORDRED', 'EDBO_OHE', 'max_custom_0', 'BayBE_adaptive', 'LogNormal_DSP', 'SBO', 'adaptive_emilien'],
         "THRESHOLD": ['PCA', 0.7, 0.9],
-        "ACQ_FUNC": ['qLogEI'],
+        "ACQ_FUNC": ['qLogEI', 'qUCB'],
         "INIT_METHOD": ['random'],
-        "KERNEL_NAME": ['Matern'],
+        "KERNEL_NAME": ['Matern', 'RBF'],
     }
     
     df_all = run_high_throughput(args, param_grid)
